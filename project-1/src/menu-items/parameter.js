@@ -21,10 +21,10 @@ const parameter = {
 
     {
       id: 'workflow',
-      title: 'Workflow',
+      title: 'Workflow Configuration',
       type: 'item',
       url: '/parameter/get-existing-pending-workflow',
-      icon: icons.SwapOutlined
+      icon: icons.HourglassOutlined
     },
     // {
     //   id: 'paginationtest',
@@ -33,12 +33,26 @@ const parameter = {
     //   url: '/parameter/get-pagiantion-api-test',
     //   icon: icons.AlertOutlined
     // },
+    // {
+    //   id: 'fundtransfer',
+    //   title: 'Fund Transfer',
+    //   type: 'item',
+    //   url: '/parameter/get-fund-transfer',
+    //   icon: icons.HourglassOutlined
+    // },
     {
       id: 'fundtransfer',
       title: 'Fund Transfer',
       type: 'item',
-      url: '/parameter/get-fund-transfer',
-      icon: icons.HourglassOutlined
+      url: '/parameter/get-workflow-adapter',
+      icon: icons.SwapOutlined
+    },
+    {
+      id: 'fundtransferpending',
+      title: 'Pending Approvals',
+      type: 'item',
+      url: '/parameter/get-pending-workflow-adapter',
+      icon: icons.BankOutlined
     }
 
     // {

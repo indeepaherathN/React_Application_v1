@@ -24,16 +24,23 @@ import {
 import { Form, FormikProvider, useFormik } from 'formik';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-
+import * as Yup from 'yup';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 
+const validationSchema = Yup.object().shape({
+  minimumAmount: Yup.number().required('Minimum amount is required').min(0, 'Minimum amount must be positive'),
+  maximumAmount: Yup.number()
+    .required('Maximum amount is required')
+    .min(Yup.ref('minimumAmount'), 'Maximum amount must be greater than to minimum amount')
+});
+
 const getInitialValues = () => {
   return {
     companyId: localStorage.getItem('companyId'),
-    workflowType: '',
-    debitAccount: '',
+    workflowType: [],
+    accountNumber: [],
     minimumAmount: '',
     maximumAmount: ''
   };
@@ -43,7 +50,6 @@ const AddForm = ({ onClose, onSubmit }) => {
   const [groupOptions, setGroupOptions] = useState([]);
   const [succesMessage, setSuccesMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [workflowType, setWorkflowType] = useState('');
   const [companyId, setCompanyId] = useState('');
 
   useEffect(() => {
@@ -60,53 +66,59 @@ const AddForm = ({ onClose, onSubmit }) => {
   };
 
   const formik = useFormik({
+    validationSchema,
     initialValues: getInitialValues(),
 
     onSubmit: async (values) => {
       console.log('onSubmit called with values:', values);
       try {
-        const workFlowSelectionDTO = {
-          account: values.debitAccount,
+        const workflowDTO = {
           companyId: localStorage.getItem('companyId'),
           maxAmount: parseFloat(values.maximumAmount),
           minAmount: parseFloat(values.minimumAmount),
-          type: values.workflowType,
           workFlowOptions: workflowLevels.map((option) => ({
             option: option.optionNumber,
             workFlowLevels: option.levels.map((level) => ({
               explan: level.authorizationLevel === 'Sequential With Next Level' ? 'S' : 'P',
               gravity: parseInt(level.noOfAuthorizers),
               groupName: level.group,
-              level: level.level,
-              ruleOrder: 1
+              level: level.level
             }))
+          })),
+          workflowAccounts: values.accountNumber.map((account) => ({
+            accountNumber: account
+          })),
+          workflowRequestType: values.workflowType.map((wftype) => ({
+            workflowType: wftype
           }))
         };
-
-        const response = await axios.post('http://10.30.2.111:9081/workflow2/v3/workflow/create/client', workFlowSelectionDTO, {
-          headers: {
-            adminBranchOrCustomerCompany: 'nable',
-            adminUserId: 'nable',
-            clientFlag: 'true',
-            'request-id': 123456
-          }
-        });
-
-        if (response.data.statusCodeValue === 202) {
-          setSuccesMessage('Workflow created successfully');
-          setErrorMessage(null);
-          if (typeof onSubmit === 'function') {
-            onSubmit(values);
-          }
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        } else {
-          setErrorMessage('Error creating workflow. Please try again.');
-        }
+        const adminWfReq = {
+          workflowDTO: [workflowDTO]
+        };
+        const baseUrl = process.env.REACT_APP_API_BASE_URL_WORKFLOW;
+        const userId = localStorage.getItem('userId');
+        await axios
+          .post(`${baseUrl}/workflow2/workflow-config-admin/workflow`, adminWfReq, {
+            headers: {
+              adminUserId: userId,
+              'request-id': 123456
+            }
+          })
+          .then(function () {
+            setSuccesMessage('Workflow Created Successfully');
+            setErrorMessage(null);
+            if (typeof onSubmit === 'function') {
+              onSubmit();
+              setTimeout(() => {
+                onClose();
+              }, 1500);
+            }
+          })
+          .catch(function (error) {
+            setErrorMessage(error.response.data.errorCode + ' - ' + error.response.data.returnMessage);
+          });
       } catch (error) {
-        console.error('API Error:', error);
-        setErrorMessage('Error creating workflow. Please try again.');
+        setErrorMessage(error.response.data.errorCode + ' - ' + error.response.data.returnMessage);
       }
     }
   });
@@ -118,13 +130,16 @@ const AddForm = ({ onClose, onSubmit }) => {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await axios.get('http://10.30.2.111:9081/workflow2/v3/groups/existing/client', {
+        const baseUrl = process.env.REACT_APP_API_BASE_URL_WORKFLOW;
+        const userId = localStorage.getItem('userId');
+        const response = await axios.get(`${baseUrl}/workflow2/group-config-admin/userGroup`, {
           headers: {
-            adminUserId: 'nable'
+            adminUserId: userId,
+            'request-id': 123
           }
         });
 
-        const groupData = response.data.groupDTO;
+        const groupData = response.data.result;
 
         if (Array.isArray(groupData)) {
           setGroupOptions(groupData);
@@ -229,83 +244,88 @@ const AddForm = ({ onClose, onSubmit }) => {
                     id="workflowType"
                     {...getFieldProps('workflowType')}
                     onChange={(e) => {
-                      setWorkflowType(e.target.value);
-                      formik.handleChange(e);
+                      formik.setFieldValue('workflowType', e.target.value);
                     }}
-                    value={workflowType}
+                    value={formik.values.workflowType}
                     error={Boolean(touched.workflowType && errors.workflowType)}
                     sx={{ width: '80%' }}
+                    multiple
                   >
                     <MenuItem value="USER">USER</MenuItem>
                     <MenuItem value="OWN_TRANSFER">OWN_TRANSFER</MenuItem>
+                    <MenuItem value="OTHER_SB">OTHER_SB</MenuItem>
                   </Select>
                 </Stack>
               </Grid>
-              {workflowType === 'USER' ? null : (
-                <>
-                  <Grid item xs={3}>
-                    <Stack spacing={1.25}>
-                      <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="debitAccount">
-                        Debit Account
-                      </InputLabel>
-                      <Select
-                        fullWidth
-                        id="debitAccount"
-                        {...getFieldProps('debitAccount')}
-                        value={formik.values.debitAccount}
-                        error={Boolean(touched.debitAccount && errors.debitAccount)}
-                        sx={{ width: '80%' }}
-                      >
-                        <MenuItem value="001910016519">001910016519</MenuItem>
-                        <MenuItem value="022210000066">022210000066</MenuItem>
-                        <MenuItem value="106257485695">106257485695</MenuItem>
-                        <MenuItem value="009210007900">009210007900</MenuItem>
-                        <MenuItem value="100250022772">100250022772</MenuItem>
-                        <MenuItem value="000150180503">000150180503</MenuItem>
-                        <MenuItem value="106257485692">106257485692</MenuItem>
-                      </Select>
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={3}>
-                    <Stack spacing={1.25}>
-                      <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="minimumAmount">
-                        Minimum Amount
-                      </InputLabel>
-                      <TextField
-                        fullWidth
-                        id="minimumAmount"
-                        type="text"
-                        placeholder="Enter Minimum Amount"
-                        {...getFieldProps('minimumAmount')}
-                        value={formik.values.minimumAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        onChange={(e) => formik.setFieldValue('minimumAmount', e.target.value.replace(/,/g, ''))}
-                        error={Boolean(touched.minimumAmount && errors.minimumAmount)}
-                        sx={{ width: '90%' }}
-                        helperText={touched.minimumAmount && errors.minimumAmount}
-                      />
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={3}>
-                    <Stack spacing={1.25}>
-                      <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="maximumAmount">
-                        Maximum Amount
-                      </InputLabel>
-                      <TextField
-                        fullWidth
-                        id="maximumAmount"
-                        type="text"
-                        placeholder="Enter Maximum Amount"
-                        {...getFieldProps('maximumAmount')}
-                        value={formik.values.maximumAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        onChange={(e) => formik.setFieldValue('maximumAmount', e.target.value.replace(/,/g, ''))}
-                        error={Boolean(touched.maximumAmount && errors.maximumAmount)}
-                        sx={{ width: '90%' }}
-                        helperText={touched.maximumAmount && errors.maximumAmount}
-                      />
-                    </Stack>
-                  </Grid>
-                </>
-              )}
+
+              <>
+                <Grid item xs={3}>
+                  <Stack spacing={1.25}>
+                    <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="accountNumber">
+                      Accounts
+                    </InputLabel>
+                    <Select
+                      fullWidth
+                      id="accountNumber"
+                      {...getFieldProps('accountNumber')}
+                      value={formik.values.accountNumber}
+                      onChange={(e) => {
+                        formik.setFieldValue('accountNumber', e.target.value);
+                      }}
+                      error={Boolean(touched.accountNumber && errors.accountNumber)}
+                      sx={{ width: '80%' }}
+                      multiple
+                    >
+                      <MenuItem value="001910016519">001910016519</MenuItem>
+                      <MenuItem value="022210000066">022210000066</MenuItem>
+                      <MenuItem value="106257485695">106257485695</MenuItem>
+                      <MenuItem value="106257485691">106257485691</MenuItem>
+                      <MenuItem value="009210007900">009210007900</MenuItem>
+                      <MenuItem value="100250022772">100250022772</MenuItem>
+                      <MenuItem value="000150180503">000150180503</MenuItem>
+                      <MenuItem value="106257485692">106257485692</MenuItem>
+                    </Select>
+                  </Stack>
+                </Grid>
+                <Grid item xs={3}>
+                  <Stack spacing={1.25}>
+                    <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="minimumAmount">
+                      Minimum Amount
+                    </InputLabel>
+                    <TextField
+                      fullWidth
+                      id="minimumAmount"
+                      type="text"
+                      placeholder="Enter Minimum Amount"
+                      {...getFieldProps('minimumAmount')}
+                      value={formik.values.minimumAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      onChange={(e) => formik.setFieldValue('minimumAmount', e.target.value.replace(/,/g, ''))}
+                      error={Boolean(touched.minimumAmount && errors.minimumAmount)}
+                      sx={{ width: '90%' }}
+                      helperText={touched.minimumAmount && errors.minimumAmount}
+                    />
+                  </Stack>
+                </Grid>
+                <Grid item xs={3}>
+                  <Stack spacing={1.25}>
+                    <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="maximumAmount">
+                      Maximum Amount
+                    </InputLabel>
+                    <TextField
+                      fullWidth
+                      id="maximumAmount"
+                      type="text"
+                      placeholder="Enter Maximum Amount"
+                      {...getFieldProps('maximumAmount')}
+                      value={formik.values.maximumAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      onChange={(e) => formik.setFieldValue('maximumAmount', e.target.value.replace(/,/g, ''))}
+                      error={Boolean(touched.maximumAmount && errors.maximumAmount)}
+                      sx={{ width: '90%' }}
+                      helperText={touched.maximumAmount && errors.maximumAmount}
+                    />
+                  </Stack>
+                </Grid>
+              </>
             </Grid>
           </DialogContent>
 
@@ -349,7 +369,7 @@ const AddForm = ({ onClose, onSubmit }) => {
 
                                 <Autocomplete
                                   options={groupOptions}
-                                  getOptionLabel={(option) => option?.groupName}
+                                  getOptionLabel={(option) => option?.groupId}
                                   value={groupOptions.find((option) => option.groupId === level.group) || null}
                                   disablePortal
                                   disableClearable
@@ -357,7 +377,7 @@ const AddForm = ({ onClose, onSubmit }) => {
                                   renderInput={(params) => (
                                     <TextField
                                       {...params}
-                                      label="Please Select Group"
+                                      label="Please Select GroupID"
                                       inputProps={{
                                         ...params.inputProps
                                       }}
@@ -401,7 +421,13 @@ const AddForm = ({ onClose, onSubmit }) => {
                                 variant="contained"
                                 color="primary"
                                 onClick={() => addAuthorizerOption(optionIndex)}
-                                sx={{ marginTop: '10px', fontWeight: 'bold' }}
+                                sx={{
+                                  backgroundColor: '#009688',
+                                  fontWeight: 'bold',
+                                  '&:hover': { backgroundColor: '#009688' },
+                                  marginTop: '10px',
+                                  marginLeft: '8px'
+                                }}
                               >
                                 Add Level
                               </Button>
@@ -410,9 +436,9 @@ const AddForm = ({ onClose, onSubmit }) => {
                                 color="primary"
                                 onClick={() => removeAuthorizerOption(optionIndex, index)}
                                 sx={{
-                                  backgroundColor: '#f50057',
+                                  backgroundColor: '#616161',
                                   fontWeight: 'bold',
-                                  '&:hover': { backgroundColor: '#f50057' },
+                                  '&:hover': { backgroundColor: '#616161' },
                                   marginTop: '10px',
                                   marginLeft: '8px'
                                 }}
@@ -446,10 +472,10 @@ const AddForm = ({ onClose, onSubmit }) => {
                     color="error"
                     onClick={handleClose}
                     sx={{
-                      backgroundColor: '#121858',
+                      backgroundColor: '#f50057',
                       fontWeight: 'bold',
                       color: '#ffffff',
-                      '&:hover': { backgroundColor: '#121858' }
+                      '&:hover': { backgroundColor: '#f50057' }
                     }}
                   >
                     Close
@@ -464,7 +490,7 @@ const AddForm = ({ onClose, onSubmit }) => {
                     //   console.log('Button Clicked');
                     //   formik.handleSubmit();
                     // }}
-                    sx={{ backgroundColor: '#e65100', fontWeight: 'bold', '&:hover': { backgroundColor: '#e65100' } }}
+                    sx={{ backgroundColor: '#2979ff', fontWeight: 'bold', '&:hover': { backgroundColor: '#2979ff' } }}
                   >
                     Create Workflow
                   </Button>

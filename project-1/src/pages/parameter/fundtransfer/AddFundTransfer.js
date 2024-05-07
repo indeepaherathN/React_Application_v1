@@ -68,12 +68,13 @@ const AddNewTransfer = ({ onClose, onSubmit }) => {
           transferMode: values.transferMode,
           transferType: 'OWN'
         };
-
+        const userId = localStorage.getItem('userId');
+        const companyId = localStorage.getItem('companyId');
         const response = await axios.post('http://10.30.2.111:9081/transfer/transfer/single', singleTransferRequest, {
           headers: {
-            companyId: 'nable',
+            companyId: companyId,
             'request-id': 'nable',
-            userId: 'nable'
+            userId: userId
           }
         });
 

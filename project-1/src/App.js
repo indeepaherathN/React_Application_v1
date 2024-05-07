@@ -1,26 +1,33 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Routes from 'routes';
 import ThemeCustomization from 'themes';
 import ScrollTop from 'components/ScrollTop';
 import { Container, Paper, TextField, Button, Typography } from '@mui/material';
 
 const App = () => {
-  const [logged, setLogged] = useState(false);
+  const [logged, setLogged] = useState(localStorage.getItem('logged') === 'true');
   const [companyId, setCompanyId] = useState('');
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLoginClick = () => {
-    if ((companyId === 'nable' || companyId === 'nable2') && password === '1234' && (userId === 'nable' || userId === 'nable2')) {
+    if (
+      (companyId === 'nable' || companyId === '410026476') &&
+      password === '1234' &&
+      (userId === 'nable' || userId === 'maneesha' || userId === 'nable2')
+    ) {
+      localStorage.setItem('logged', 'true');
       localStorage.setItem('companyId', companyId);
       localStorage.setItem('userId', userId);
-      console.log('CompanyID from LocalStorage:', companyId);
-      console.log('UserID from LocalStorage:', userId);
       setLogged(true);
     } else {
       alert('Invalid CompanyId, UserID, or Password. Please try again.');
     }
   };
+
+  useEffect(() => {
+    setLogged(localStorage.getItem('logged') === 'true');
+  }, []);
 
   return (
     <ThemeCustomization>
@@ -69,6 +76,7 @@ const App = () => {
                   value={password}
                   style={{ width: '350px', maxHeight: '600px' }}
                   onChange={(e) => setPassword(e.target.value)}
+                  type="password"
                 />
 
                 <Button
@@ -79,7 +87,7 @@ const App = () => {
                   onClick={handleLoginClick}
                   style={{ marginTop: '20px' }}
                 >
-                  LOGIN AS ENTERER
+                  LOGIN
                 </Button>
               </form>
             </Paper>

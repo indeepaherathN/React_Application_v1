@@ -130,11 +130,12 @@ const FundtransferList = () => {
 
   const [loading, setLoading] = useState(false);
   const [totalDataCount, setTotalDataCount] = useState(0);
-
   const [perPage] = useState(100);
 
   const fetchData = async () => {
     try {
+      const userId = localStorage.getItem('userId');
+      const companyId = localStorage.getItem('companyId');
       const response = await axios.post(
         `http://10.30.2.111:9081/transfer/transfer/v2/single/own`,
         {
@@ -144,8 +145,8 @@ const FundtransferList = () => {
         },
         {
           headers: {
-            companyId: 'nable',
-            userId: 'nable',
+            companyId: companyId,
+            userId: userId,
             'request-id': '123'
           }
         }
@@ -155,7 +156,6 @@ const FundtransferList = () => {
         id: index,
         transferId: item.transferId,
         transferType: item.transferType,
-
         amount: item.amount,
         companyRef: item.companyRef,
         createdUser: item.createdUser,

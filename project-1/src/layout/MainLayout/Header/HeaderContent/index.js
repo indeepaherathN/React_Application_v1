@@ -1,39 +1,37 @@
-// material-ui
-// import { Box, useMediaQuery } from '@mui/material';
-//import { GithubOutlined } from '@ant-design/icons';
-
-// project import
-// import Search from './Search';
-// import Profile from './Profile';
-//import Notification from './Notification';
-// import MobileSection from './MobileSection';
-
-// ==============================|| HEADER - CONTENT ||============================== //
+import { IconButton, Tooltip, Box, Typography } from '@mui/material';
+import { LogoutOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 
 const HeaderContent = () => {
-  // const matchesXs = useMediaQuery((theme) => theme.breakpoints.down('md'));
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('companyId');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('logged');
+    navigate('/');
+
+    window.location.reload();
+  };
 
   return (
-    <>
-      {/* {!matchesXs && <Search />} */}
-      {/* {matchesXs && <Box sx={{ width: '100%', ml: 1 }} />} */}
-
-      {/* <IconButton
-        component={Link}
-        href="https://github.com/codedthemes/mantis-free-react-admin-template"
-        target="_blank"
-        disableRipple
-        color="secondary"
-        title="Download Free Version"
-        sx={{ color: 'text.primary', bgcolor: 'grey.100' }}
-      >
-        <GithubOutlined />
-      </IconButton> */}
-
-      {/* <Notification /> */}
-      {/* {!matchesXs && <Profile />} */}
-      {/* {matchesXs && <MobileSection />} */}
-    </>
+    <Tooltip title="Logout">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <IconButton disableRipple color="secondary" onClick={handleLogout} sx={{ color: 'text.primary', bgcolor: 'grey.100' }}>
+          <LogoutOutlined />
+        </IconButton>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 'bold',
+            color: '#212121',
+            marginLeft: 1
+          }}
+        >
+          LOGOUT
+        </Typography>
+      </Box>
+    </Tooltip>
   );
 };
 

@@ -89,32 +89,9 @@ const AddExistingPendingWorkflow = () => {
     setIsExistingViewOpen(false);
   };
 
-  // const handleDelete = async (workflowSelectionId) => {
-  //   try {
-  //     await axios.post('http://10.30.2.111:9081/workflow2/v3/workflow/delete/client', null, {
-  //       headers: {
-  //         adminBranchOrCustomerCompany: 'nable',
-  //         clientFlag: true,
-  //         id: workflowSelectionId,
-  //         'request-id': '123',
-  //         userId: 'nable'
-  //       }
-  //     });
-
-  //     fetchData();
-
-  //     handleClick({
-  //       severity: 'success',
-  //       description: 'Record deleted successfully'
-  //     });
-  //   } catch (error) {
-  //     handleClick({
-  //       severity: 'error',
-  //       description: 'Failed to delete record'
-  //     });
-  //     console.error(error);
-  //   }
-  // };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleDelete = async (workflowSelectionId) => {
     const result = await Swal.fire({
@@ -127,15 +104,17 @@ const AddExistingPendingWorkflow = () => {
       confirmButtonText: 'Yes, delete it!'
     });
 
+    const baseUrl = process.env.REACT_APP_API_BASE_URL_WORKFLOW;
+    const userId = localStorage.getItem('userId');
     if (result.isConfirmed) {
       try {
-        await axios.post('http://10.30.2.111:9081/workflow2/v3/workflow/delete/client', null, {
+        await axios.post(`${baseUrl}/workflow2/workflow-config-admin/delete-workflow`, null, {
           headers: {
-            adminBranchOrCustomerCompany: 'nable',
-            clientFlag: true,
+            adminUserId: userId,
+            //clientFlag: true,
             id: workflowSelectionId,
-            'request-id': '123',
-            userId: 'nable'
+            'request-id': '123'
+            //userId: 'nable'
           }
         });
 
@@ -157,7 +136,7 @@ const AddExistingPendingWorkflow = () => {
 
   const columns = [
     { field: 'type', headerName: 'Workflow Type', flex: 1 },
-    { field: 'account', headerName: 'Account Number', flex: 1 },
+    { field: 'accountNumber', headerName: 'Account Number', flex: 1 },
     {
       field: 'minAmount',
       headerName: 'Minimum Amount',
@@ -213,7 +192,7 @@ const AddExistingPendingWorkflow = () => {
   const OwnRequestColumns = [
     { field: 'companyId', headerName: 'Company ID', flex: 1 },
     { field: 'type', headerName: 'Workflow Type', flex: 1 },
-    { field: 'account', headerName: 'Account Number', flex: 1 },
+    { field: 'accountNumber', headerName: 'Account Number', flex: 1 },
     {
       field: 'minAmount',
       headerName: 'Minimum Amount',
@@ -255,6 +234,7 @@ const AddExistingPendingWorkflow = () => {
               <IconButton
                 color="error"
                 onClick={(e) => {
+                  handleDelete(params.row.workflowSelectionId);
                   e.stopPropagation();
                 }}
               >
@@ -296,6 +276,7 @@ const AddExistingPendingWorkflow = () => {
   const [page, setpage] = useState(0);
   const [perPage, setPerPage] = useState(100);
 
+  const baseUrl = process.env.REACT_APP_API_BASE_URL_WORKFLOW;
   const fetchData = async (queryParams = {}) => {
     // const fetchData = async () => {
     try {
@@ -303,23 +284,24 @@ const AddExistingPendingWorkflow = () => {
       setpage(queryParams.page || 0);
       setPerPage(queryParams.per_page || 10);
       const userId = localStorage.getItem('userId');
-      const response = await axios.get(`http://10.30.2.111:9081/workflow2/v3/v4/existing/client`, {
+      const response = await axios.get(`${baseUrl}/workflow2/workflow-config-admin/workflow`, {
         headers: {
-          adminUserId: userId
+          adminUserId: userId,
+          'request-id': 123
         },
         params: {
           page: queryParams.page || 0,
-          per_page: queryParams.per_page || 10,
-          sort: queryParams.sort || 'workflowSelectionId',
-          direction: queryParams.direction || 'ASC',
-          search: queryParams.search || ''
+          per_page: queryParams.per_page || 10
+          // sort: queryParams.sort || 'workflowSelectionId',
+          // direction: queryParams.direction || 'ASC',
+          // search: queryParams.search || ''
         }
       });
 
       const fetchedData = response.data.result;
       const mappedData = fetchedData.map((item, index) => ({
         type: item.type,
-        account: item.account,
+        accountNumber: item.accountNumber ? item.accountNumber.map((acc) => acc.accountNumber).join(', ') : '',
         minAmount: item.minAmount,
         maxAmount: item.maxAmount,
         status: item.status,
@@ -331,7 +313,7 @@ const AddExistingPendingWorkflow = () => {
       const ownRequestData = fetchedData.map((item, index) => ({
         companyId: item.companyId,
         type: item.type,
-        account: item.account,
+        accountNumber: item.accountNumber ? item.accountNumber.map((acc) => acc.accountNumber).join(', ') : '',
         minAmount: item.minAmount,
         maxAmount: item.maxAmount,
         action: item.action,
@@ -397,7 +379,7 @@ const AddExistingPendingWorkflow = () => {
                 sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
                 aria-describedby="alert-dialog-slide-description"
               >
-                <AddWorkflowForm open={isDialogOpen} onClose={handleCloseDialog} />
+                <AddWorkflowForm open={isDialogOpen} onClose={handleCloseDialog} onSubmit={fetchData} />
               </Dialog>
             ) : loading ? (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '50vh' }}>
@@ -436,32 +418,6 @@ const AddExistingPendingWorkflow = () => {
                   paginationMode="server"
                 />
 
-                {/* <Typography variant="h6" gutterBottom>
-                  Pending Workflows
-                </Typography> */}
-
-                {/* <DataGrid
-                  rows={rows}
-                  columns={columns}
-                  pagination
-                  pageSize={perPage}
-                  rowCount={totalDataCount}
-                  autoHeight
-                  autoWidth
-                  sx={{ mt: 3 }}
-                  initialState={{
-                    pagination: {
-                      paginationModel: { page: page, pageSize: perPage }
-                    }
-                  }}
-                  onPaginationModelChange={(e) => {
-                    console.log(e);
-                    fetchData({ page: e.page, per_page: e.pageSize });
-                  }}
-                  pageSizeOptions={[5, 10, 20]}
-                  paginationMode="server"
-                /> */}
-
                 <Typography
                   variant="h6"
                   gutterBottom
@@ -496,7 +452,7 @@ const AddExistingPendingWorkflow = () => {
           </MainCard>
         </Grid>
       </Grid>
-      {/* Snackbar model */}
+
       {open && (
         <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={open} autoHideDuration={6000} onClose={handleClose}>
           <Alert onClose={handleClose} severity={snackbarContent.severity || 'success'} sx={{ width: '100%' }}>
@@ -505,28 +461,11 @@ const AddExistingPendingWorkflow = () => {
         </Snackbar>
       )}
 
-      {/* {isPendingViewOpen == true && (
-        <Dialog
-          //maxWidth="sm"
-          fullWidth={fullWidth}
-          maxWidth={maxWidth}
-          TransitionComponent={Slide}
-          keepMounted
-          //fullWidth
-          onClose={() => setIsPendingViewOpen(false)}
-          open={isPendingViewOpen}
-          sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
-          aria-describedby="alert-dialog-slide-description"
-        >
-          <PendingView rowData={selectedRowData} />
-        </Dialog>
-      )} */}
-
       {isExistingViewOpen == true && (
         <Dialog
           //fullWidth={fullWidth}
           //maxWidth="md"
-          fullScreen
+          //fullScreen
           // fullWidth={fullWidth}
           // maxWidth={maxWidth}
           TransitionComponent={Slide}

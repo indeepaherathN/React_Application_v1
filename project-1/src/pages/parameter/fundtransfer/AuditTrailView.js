@@ -10,19 +10,20 @@ const AuditTrailView = ({ transferId, wfValue, onClose }) => {
   useEffect(() => {
     console.log('Current transferId:', transferId);
     console.log('Current wfValue:', wfValue);
-
+    const userId = localStorage.getItem('userId');
+    const companyId = localStorage.getItem('companyId');
     const fetchData = async () => {
       try {
         const response = await axios.post(
-          `http://10.30.2.111:9081/transfer/transfer/v2/single/own`,
+          `${baseUrl}/transfer/transfer/v2/single/own`,
           {
             transferId: transferId,
             transferType: 'OWN'
           },
           {
             headers: {
-              companyId: 'nable',
-              userId: 'nable',
+              companyId: companyId,
+              userId: userId,
               'request-id': '123'
             }
           }

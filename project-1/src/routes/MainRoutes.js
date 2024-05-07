@@ -17,7 +17,9 @@ const AddExistingPendingWorkflow = Loadable(lazy(() => import('pages/parameter/e
 const PaginationApiTestPage = Loadable(lazy(() => import('pages/parameter/paginationtest/PaginationApiTestPage')));
 const AddUserGroup = Loadable(lazy(() => import('pages/parameter/usergroups/AddUserGroup')));
 const Branches = Loadable(lazy(() => import('pages/parameter/brancheslist/Branches')));
-const FundTransfer = Loadable(lazy(() => import('pages/parameter/fundtransfer/fundtransferlist')));
+//const FundTransfer = Loadable(lazy(() => import('pages/parameter/fundtransfer/fundtransferlist')));
+const WorkflowAdapter = Loadable(lazy(() => import('pages/parameter/workflowadapter/workflowadapterlist')));
+const WorkflowAdapterPending = Loadable(lazy(() => import('pages/parameter/workflowadapter/workflowadapterpending')));
 // const AuthorizationLevelsPage = Loadable(lazy(() => import('pages/parameter/existinggroupsnew/AuthorizationLevelsPage')));
 // const AddEditWorkflow = Loadable(lazy(() => import('pages/parameter/existinggroupsnew/AddEditWorkflow')));
 
@@ -35,7 +37,7 @@ const MainRoutes = {
       path: 'dashboard',
       children: [
         {
-          path: 'default',
+          //path: 'default',
           element: <DashboardDefault />
         }
       ]
@@ -82,9 +84,17 @@ const MainRoutes = {
           path: 'get-branches',
           element: <Branches />
         },
+        // {
+        //   path: 'get-fund-transfer',
+        //   element: <FundTransfer />
+        // },
         {
-          path: 'get-fund-transfer',
-          element: <FundTransfer />
+          path: 'get-workflow-adapter',
+          element: <WorkflowAdapter />
+        },
+        {
+          path: 'get-pending-workflow-adapter',
+          element: <WorkflowAdapterPending />
         }
 
         // {
