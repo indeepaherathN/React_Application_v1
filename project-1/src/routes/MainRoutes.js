@@ -30,18 +30,21 @@ const MainRoutes = {
   element: <MainLayout />,
   children: [
     {
-      path: '/',
+      path: 'dashoard',
       element: <DashboardDefault />
     },
     {
-      path: 'dashboard',
-      children: [
-        {
-          //path: 'default',
-          element: <DashboardDefault />
-        }
-      ]
+      path: 'get-existing-pending-workflow',
+      element: <AddExistingPendingWorkflow />
     },
+    {
+      path: 'get-workflow-adapter',
+      element: <WorkflowAdapter />
+    },
+    {
+      path: 'get-pending-workflow-adapter',
+      element: <WorkflowAdapterPending />
+    },   
     // {
     //   path: 'application',
     //   children: [
@@ -75,37 +78,10 @@ const MainRoutes = {
           path: 'get-user-groups',
           element: <AddUserGroup />
         },
-
-        {
-          path: 'get-existing-pending-workflow',
-          element: <AddExistingPendingWorkflow />
-        },
         {
           path: 'get-branches',
           element: <Branches />
-        },
-        // {
-        //   path: 'get-fund-transfer',
-        //   element: <FundTransfer />
-        // },
-        {
-          path: 'get-workflow-adapter',
-          element: <WorkflowAdapter />
-        },
-        {
-          path: 'get-pending-workflow-adapter',
-          element: <WorkflowAdapterPending />
         }
-
-        // {
-        //   path: 'get-authorization',
-        //   element: <AuthorizationLevelsPage />
-        // },
-
-        // {
-        //   path: 'get-Addworkflow',
-        //   element: <AddEditWorkflow/>
-        // }
       ]
     }
   ]

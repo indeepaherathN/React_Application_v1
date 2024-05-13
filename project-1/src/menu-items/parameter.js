@@ -23,7 +23,7 @@ const parameter = {
       id: 'workflow',
       title: 'Workflow Configuration',
       type: 'item',
-      url: '/parameter/get-existing-pending-workflow',
+      url: '/get-existing-pending-workflow',
       icon: icons.HourglassOutlined
     },
     // {
@@ -44,14 +44,14 @@ const parameter = {
       id: 'fundtransfer',
       title: 'Fund Transfer',
       type: 'item',
-      url: '/parameter/get-workflow-adapter',
+      url: '/get-workflow-adapter',
       icon: icons.SwapOutlined
     },
     {
       id: 'fundtransferpending',
       title: 'Pending Approvals',
       type: 'item',
-      url: '/parameter/get-pending-workflow-adapter',
+      url: '/get-pending-workflow-adapter',
       icon: icons.BankOutlined
     }
 

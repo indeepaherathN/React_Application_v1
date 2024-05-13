@@ -19,7 +19,7 @@ import {
   Button,
   Dialog,
   //IconButton,
-  OutlinedInput,
+  // OutlinedInput,
   Snackbar,
   Stack,
   Slide
@@ -31,35 +31,35 @@ import MuiAlert from '@mui/material/Alert';
 import MainCard from 'components/MainCard';
 
 // assets
-import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 
 // ==============================|| Components ||============================== //
-function GlobalFilter({ preGlobalFilteredRows, globalFilter, setGlobalFilter, ...other }) {
-  const count = preGlobalFilteredRows.length;
-  const [value, setValue] = useState(globalFilter);
-  let debounceTimeout;
+// function GlobalFilter({ preGlobalFilteredRows, globalFilter, setGlobalFilter, ...other }) {
+//   const count = preGlobalFilteredRows.length;
+//   const [value, setValue] = useState(globalFilter);
+//   let debounceTimeout;
 
-  const onChange = (value) => {
-    clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(() => {
-      setGlobalFilter(value || undefined);
-    }, 200);
-  };
+//   const onChange = (value) => {
+//     clearTimeout(debounceTimeout);
+//     debounceTimeout = setTimeout(() => {
+//       setGlobalFilter(value || undefined);
+//     }, 200);
+//   };
 
-  return (
-    <OutlinedInput
-      value={value || ''}
-      onChange={(e) => {
-        setValue(e.target.value);
-        onChange(e.target.value);
-      }}
-      placeholder={`Search ${count} records...`}
-      id="start-adornment-email"
-      startAdornment={<SearchOutlined />}
-      {...other}
-    />
-  );
-}
+//   return (
+//     <OutlinedInput
+//       value={value || ''}
+//       onChange={(e) => {
+//         setValue(e.target.value);
+//         onChange(e.target.value);
+//       }}
+//       placeholder={`Search ${count} records...`}
+//       id="start-adornment-email"
+//       startAdornment={<SearchOutlined />}
+//       {...other}
+//     />
+//   );
+// }
 
 const Alert = forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -70,8 +70,8 @@ const Alert = forwardRef(function Alert(props, ref) {
 const AddExistingPendingWorkflow = () => {
   //table
   const [rows, setRows] = useState([]);
-  const preGlobalFilteredRows = rows || [];
-  const [globalFilter, setGlobalFilter] = useState('');
+  // const preGlobalFilteredRows = rows || [];
+  // const [globalFilter, setGlobalFilter] = useState('');
   const [ownRequestRows, setOwnRequestRows] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isExistingViewOpen, setIsExistingViewOpen] = useState(false);
@@ -343,8 +343,8 @@ const AddExistingPendingWorkflow = () => {
   };
 
   useEffect(() => {
-    fetchData({ search: globalFilter });
-  }, [globalFilter]);
+    fetchData();
+  }, []);
 
   return (
     <>
@@ -353,7 +353,6 @@ const AddExistingPendingWorkflow = () => {
           <MainCard>
             <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <GlobalFilter preGlobalFilteredRows={preGlobalFilteredRows} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                 <Button
                   variant="contained"
                   startIcon={<PlusOutlined />}
@@ -379,7 +378,9 @@ const AddExistingPendingWorkflow = () => {
                 sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
                 aria-describedby="alert-dialog-slide-description"
               >
-                <AddWorkflowForm open={isDialogOpen} onClose={handleCloseDialog} onSubmit={fetchData} />
+                <Grid item>
+                  <AddWorkflowForm open={isDialogOpen} onClose={handleCloseDialog} onSubmit={fetchData} />
+                </Grid>
               </Dialog>
             ) : loading ? (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '50vh' }}>
@@ -395,60 +396,66 @@ const AddExistingPendingWorkflow = () => {
                   Existing Workflows
                 </Typography>
 
-                <DataGrid
-                  rows={rows}
-                  columns={columns}
-                  pagination
-                  pageSize={perPage}
-                  rowCount={totalDataCount}
-                  components={{ Toolbar: GridToolbar }}
-                  autoHeight
-                  autoWidth
-                  sx={{ mt: 3 }}
-                  initialState={{
-                    pagination: {
-                      paginationModel: { page: page, pageSize: perPage }
-                    }
-                  }}
-                  onPaginationModelChange={(e) => {
-                    console.log(e);
-                    fetchData({ page: e.page, per_page: e.pageSize });
-                  }}
-                  pageSizeOptions={[5, 10, 20]}
-                  paginationMode="server"
-                />
-
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ fontSize: '1.0rem', fontWeight: 'bold', color: '#757575', marginBottom: '6px' }}
-                >
-                  Own Requests
-                </Typography>
-                <DataGrid
-                  rows={ownRequestRows}
-                  columns={OwnRequestColumns}
-                  pagination
-                  pageSize={perPage}
-                  rowCount={totalDataCount}
-                  components={{ Toolbar: GridToolbar }}
-                  autoHeight
-                  autoWidth
-                  sx={{ mt: 3 }}
-                  initialState={{
-                    pagination: {
-                      paginationModel: { page: page, pageSize: perPage }
-                    }
-                  }}
-                  onPaginationModelChange={(e) => {
-                    console.log(e);
-                    fetchData({ page: e.page, per_page: e.pageSize });
-                  }}
-                  pageSizeOptions={[5, 10, 20]}
-                  paginationMode="server"
-                />
+                <Box sx={{ height: 'auto', width: '100%' }}>
+                  <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    pagination
+                    pageSize={perPage}
+                    rowCount={totalDataCount}
+                    components={{ Toolbar: GridToolbar }}
+                    autoHeight
+                    autoWidth
+                    sx={{ mt: 3 }}
+                    initialState={{
+                      pagination: {
+                        paginationModel: { page: page, pageSize: perPage }
+                      }
+                    }}
+                    onPaginationModelChange={(e) => {
+                      console.log(e);
+                      fetchData({ page: e.page, per_page: e.pageSize });
+                    }}
+                    pageSizeOptions={[5, 10, 20]}
+                    paginationMode="server"
+                  />
+                </Box>
               </>
             )}
+          </MainCard>
+          <br />
+          <MainCard>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ fontSize: '1.0rem', fontWeight: 'bold', color: '#757575', marginBottom: '6px' }}
+            >
+              Own Requests
+            </Typography>
+            <Box sx={{ height: 'auto', width: '100%' }}>
+              <DataGrid
+                rows={ownRequestRows}
+                columns={OwnRequestColumns}
+                pagination
+                pageSize={perPage}
+                rowCount={totalDataCount}
+                components={{ Toolbar: GridToolbar }}
+                autoHeight
+                autoWidth
+                sx={{ mt: 3 }}
+                initialState={{
+                  pagination: {
+                    paginationModel: { page: page, pageSize: perPage }
+                  }
+                }}
+                onPaginationModelChange={(e) => {
+                  console.log(e);
+                  fetchData({ page: e.page, per_page: e.pageSize });
+                }}
+                pageSizeOptions={[5, 10, 20]}
+                paginationMode="server"
+              />
+            </Box>
           </MainCard>
         </Grid>
       </Grid>

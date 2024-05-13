@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import {
   Button,
   DialogActions,
@@ -155,13 +155,13 @@ const AddForm = ({ onClose, onSubmit }) => {
   }, []);
 
   const [workflowLevels, setWorkflowLevels] = useState([
-    { optionNumber: 1, levels: [{ level: 1, group: '', noOfAuthorizers: '', authorizationLevel: '' }] }
+    { optionNumber: 1, levels: [{ group: '', noOfAuthorizers: '', authorizationLevel: '' }] }
   ]);
 
   const addWorkflowLevel = () => {
     setWorkflowLevels([
       ...workflowLevels,
-      { optionNumber: workflowLevels.length + 1, levels: [{ level: 1, group: '', noOfAuthorizers: '', authorizationLevel: '' }] }
+      { optionNumber: workflowLevels.length + 1, levels: [{ group: '', noOfAuthorizers: '', authorizationLevel: '' }] }
     ]);
   };
 
@@ -169,11 +169,11 @@ const AddForm = ({ onClose, onSubmit }) => {
     const newWorkflowLevels = [...workflowLevels];
     const option = newWorkflowLevels[optionIndex];
     option.levels.push({
-      level: ` ${option.levels.length + 1}`,
       group: '',
       noOfAuthorizers: '',
       authorizationLevel: ''
     });
+    console.log(newWorkflowLevels);
     setWorkflowLevels(newWorkflowLevels);
   };
 
@@ -205,8 +205,18 @@ const AddForm = ({ onClose, onSubmit }) => {
   };
 
   const removeAuthorizerOption = (optionIndex, levelIndex) => {
+    const curretLevels = workflowLevels[optionIndex].levels.length;
+    if (curretLevels === 1) return;
     const newWorkflowLevels = [...workflowLevels];
     newWorkflowLevels[optionIndex].levels.splice(levelIndex, 1);
+    setWorkflowLevels(newWorkflowLevels);
+  };
+
+  const removeAuthorizerWorkflow = (optionIndex) => {
+    const curretWorkflows = workflowLevels.length;
+    if (curretWorkflows === 1) return;
+    const newWorkflowLevels = [...workflowLevels];
+    newWorkflowLevels.splice(optionIndex, 1);
     setWorkflowLevels(newWorkflowLevels);
   };
 
@@ -216,13 +226,13 @@ const AddForm = ({ onClose, onSubmit }) => {
         <Form autoComplete="off" noValidate onSubmit={formik.handleSubmit}>
           <DialogTitle style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#616161' }}>Workflow Creation</DialogTitle>
           <Divider />
-          <DialogContent sx={{}}>
+          <DialogContent>
             <Grid container spacing={3}>
               <Grid item xs={12} md={12}>
                 <Grid container spacing={3}>
-                  <Grid item xs={6}>
+                  <Grid item xs={6} marginLeft={4}>
                     <Stack spacing={1.25}>
-                      <Typography sx={{ color: 'black', fontWeight: 'bold' }}>Company ID</Typography>
+                      <Typography sx={{ color: 'black', fontWeight: 'bold', fontSize: '15px' }}>Company ID</Typography>
                       <Typography>{companyId}</Typography>
                     </Stack>
                   </Grid>
@@ -232,9 +242,9 @@ const AddForm = ({ onClose, onSubmit }) => {
           </DialogContent>
           <Divider />
 
-          <DialogContent sx={{ p: 2.5 }}>
-            <Grid container spacing={3}>
-              <Grid item xs={3}>
+          <DialogContent>
+            <Grid container paddingLeft={4}>
+              <Grid item md={3} xs={12}>
                 <Stack spacing={1.25}>
                   <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="workflowType">
                     Workflow Type
@@ -257,80 +267,77 @@ const AddForm = ({ onClose, onSubmit }) => {
                   </Select>
                 </Stack>
               </Grid>
-
-              <>
-                <Grid item xs={3}>
-                  <Stack spacing={1.25}>
-                    <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="accountNumber">
-                      Accounts
-                    </InputLabel>
-                    <Select
-                      fullWidth
-                      id="accountNumber"
-                      {...getFieldProps('accountNumber')}
-                      value={formik.values.accountNumber}
-                      onChange={(e) => {
-                        formik.setFieldValue('accountNumber', e.target.value);
-                      }}
-                      error={Boolean(touched.accountNumber && errors.accountNumber)}
-                      sx={{ width: '80%' }}
-                      multiple
-                    >
-                      <MenuItem value="001910016519">001910016519</MenuItem>
-                      <MenuItem value="022210000066">022210000066</MenuItem>
-                      <MenuItem value="106257485695">106257485695</MenuItem>
-                      <MenuItem value="106257485691">106257485691</MenuItem>
-                      <MenuItem value="009210007900">009210007900</MenuItem>
-                      <MenuItem value="100250022772">100250022772</MenuItem>
-                      <MenuItem value="000150180503">000150180503</MenuItem>
-                      <MenuItem value="106257485692">106257485692</MenuItem>
-                    </Select>
-                  </Stack>
-                </Grid>
-                <Grid item xs={3}>
-                  <Stack spacing={1.25}>
-                    <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="minimumAmount">
-                      Minimum Amount
-                    </InputLabel>
-                    <TextField
-                      fullWidth
-                      id="minimumAmount"
-                      type="text"
-                      placeholder="Enter Minimum Amount"
-                      {...getFieldProps('minimumAmount')}
-                      value={formik.values.minimumAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      onChange={(e) => formik.setFieldValue('minimumAmount', e.target.value.replace(/,/g, ''))}
-                      error={Boolean(touched.minimumAmount && errors.minimumAmount)}
-                      sx={{ width: '90%' }}
-                      helperText={touched.minimumAmount && errors.minimumAmount}
-                    />
-                  </Stack>
-                </Grid>
-                <Grid item xs={3}>
-                  <Stack spacing={1.25}>
-                    <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="maximumAmount">
-                      Maximum Amount
-                    </InputLabel>
-                    <TextField
-                      fullWidth
-                      id="maximumAmount"
-                      type="text"
-                      placeholder="Enter Maximum Amount"
-                      {...getFieldProps('maximumAmount')}
-                      value={formik.values.maximumAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      onChange={(e) => formik.setFieldValue('maximumAmount', e.target.value.replace(/,/g, ''))}
-                      error={Boolean(touched.maximumAmount && errors.maximumAmount)}
-                      sx={{ width: '90%' }}
-                      helperText={touched.maximumAmount && errors.maximumAmount}
-                    />
-                  </Stack>
-                </Grid>
-              </>
+              <Grid item md={3} xs={12}>
+                <Stack spacing={1.25}>
+                  <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="accountNumber">
+                    Accounts
+                  </InputLabel>
+                  <Select
+                    fullWidth
+                    id="accountNumber"
+                    {...getFieldProps('accountNumber')}
+                    value={formik.values.accountNumber}
+                    onChange={(e) => {
+                      formik.setFieldValue('accountNumber', e.target.value);
+                    }}
+                    error={Boolean(touched.accountNumber && errors.accountNumber)}
+                    sx={{ width: '80%' }}
+                    multiple
+                  >
+                    <MenuItem value="001910016519">001910016519</MenuItem>
+                    <MenuItem value="022210000066">022210000066</MenuItem>
+                    <MenuItem value="106257485695">106257485695</MenuItem>
+                    <MenuItem value="106257485691">106257485691</MenuItem>
+                    <MenuItem value="009210007900">009210007900</MenuItem>
+                    <MenuItem value="100250022772">100250022772</MenuItem>
+                    <MenuItem value="000150180503">000150180503</MenuItem>
+                    <MenuItem value="106257485692">106257485692</MenuItem>
+                  </Select>
+                </Stack>
+              </Grid>
+              <Grid item md={3} xs={12}>
+                <Stack spacing={1.25}>
+                  <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="minimumAmount">
+                    Minimum Amount
+                  </InputLabel>
+                  <TextField
+                    fullWidth
+                    id="minimumAmount"
+                    type="text"
+                    placeholder="Enter Minimum Amount"
+                    {...getFieldProps('minimumAmount')}
+                    value={formik.values.minimumAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    onChange={(e) => formik.setFieldValue('minimumAmount', e.target.value.replace(/,/g, ''))}
+                    error={Boolean(touched.minimumAmount && errors.minimumAmount)}
+                    sx={{ width: '90%' }}
+                    helperText={touched.minimumAmount && errors.minimumAmount}
+                  />
+                </Stack>
+              </Grid>
+              <Grid item md={3} xs={12}>
+                <Stack spacing={1.25}>
+                  <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="maximumAmount">
+                    Maximum Amount
+                  </InputLabel>
+                  <TextField
+                    fullWidth
+                    id="maximumAmount"
+                    type="text"
+                    placeholder="Enter Maximum Amount"
+                    {...getFieldProps('maximumAmount')}
+                    value={formik.values.maximumAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    onChange={(e) => formik.setFieldValue('maximumAmount', e.target.value.replace(/,/g, ''))}
+                    error={Boolean(touched.maximumAmount && errors.maximumAmount)}
+                    sx={{ width: '90%' }}
+                    helperText={touched.maximumAmount && errors.maximumAmount}
+                  />
+                </Stack>
+              </Grid>
             </Grid>
           </DialogContent>
 
-          <DialogContent sx={{ p: 2.5 }}>
-            <Grid container spacing={3}>
+          <DialogContent>
+            <Grid container paddingLeft={4} paddingRight={4}>
               <Grid item xs={12}>
                 <Typography
                   variant="h6"
@@ -341,7 +348,7 @@ const AddForm = ({ onClose, onSubmit }) => {
                 </Typography>
 
                 {workflowLevels.map((option, optionIndex) => (
-                  <div key={optionIndex}>
+                  <Fragment key={optionIndex}>
                     <TableContainer component={Paper}>
                       <Table>
                         <TableHead>
@@ -351,13 +358,15 @@ const AddForm = ({ onClose, onSubmit }) => {
                             <TableCell sx={{ backgroundColor: '#e0e0e0' }}>Group</TableCell>
                             <TableCell sx={{ backgroundColor: '#e0e0e0' }}>No of Authorizers</TableCell>
                             <TableCell sx={{ backgroundColor: '#e0e0e0' }}>Authorization Level</TableCell>
+                            <TableCell sx={{ backgroundColor: '#e0e0e0' }}> </TableCell>
+                            <TableCell sx={{ backgroundColor: '#e0e0e0' }}> </TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {option.levels.map((level, index) => (
                             <TableRow key={index}>
-                              <TableCell>{index === 0 ? option.optionNumber : ''}</TableCell>
-                              <TableCell>{level.level}</TableCell>
+                              <TableCell>{index === 0 ? optionIndex + 1 : ''}</TableCell>
+                              <TableCell>{index + 1}</TableCell>
                               <TableCell>
                                 {/* <Select value={level.group} onChange={(e) => handleGroupChange(e, optionIndex, index)}>
                                   {groupOptions.map((group) => (
@@ -420,20 +429,6 @@ const AddForm = ({ onClose, onSubmit }) => {
                               <Button
                                 variant="contained"
                                 color="primary"
-                                onClick={() => addAuthorizerOption(optionIndex)}
-                                sx={{
-                                  backgroundColor: '#009688',
-                                  fontWeight: 'bold',
-                                  '&:hover': { backgroundColor: '#009688' },
-                                  marginTop: '10px',
-                                  marginLeft: '8px'
-                                }}
-                              >
-                                Add Level
-                              </Button>
-                              <Button
-                                variant="contained"
-                                color="primary"
                                 onClick={() => removeAuthorizerOption(optionIndex, index)}
                                 sx={{
                                   backgroundColor: '#616161',
@@ -446,24 +441,66 @@ const AddForm = ({ onClose, onSubmit }) => {
                                 Remove Level
                               </Button>
                             </TableRow>
+
                           ))}
                         </TableBody>
                       </Table>
                     </TableContainer>
-                  </div>
+                    <Grid item xs={12} paddingTop={2} paddingBottom={2} >
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => removeAuthorizerWorkflow(optionIndex)}
+                        sx={{
+                          fontWeight: 'bold',
+                          '&:hover': { backgroundColor: '#ef9a9a' },
+                          marginTop: '10px',
+                          marginLeft: '8px',
+                          float: 'right'
+                        }}
+                      >
+                        Remove Option
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary" 
+                        onClick={() => addAuthorizerOption(optionIndex)}
+                        sx={{
+                          backgroundColor: '#009688',
+                          fontWeight: 'bold',
+                          '&:hover': { backgroundColor: '#009688' },
+                          marginTop: '10px',
+                          marginLeft: '8px',
+                          float: 'right'
+                        }}
+                      >
+                        Add Level
+                      </Button>
+                    </Grid>
+                    <Grid item xs={12} paddingTop={2} paddingBottom={2} >
+                      <br />
+                      <Divider />
+                      <br />
+                    </Grid>
+                  </Fragment>
                 ))}
               </Grid>
             </Grid>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={addWorkflowLevel}
-              sx={{ backgroundColor: '#4caf50', fontWeight: 'bold', '&:hover': { backgroundColor: '#388e3c' } }}
-            >
-              Add Option
-            </Button>
+
+            <Grid container paddingLeft={4} paddingTop={2}>
+              <Grid item xs={6} md={3} sx={{ p: 3 }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={addWorkflowLevel}
+                  sx={{ backgroundColor: '#4caf50', fontWeight: 'bold', '&:hover': { backgroundColor: '#388e3c' } }}
+                >
+                  Add Option
+                </Button>
+              </Grid>
+            </Grid>
           </DialogContent>
-          <DialogActions sx={{ p: 2.5 }}>
+          <DialogActions>
             <Grid container justifyContent="space-between" alignItems="center">
               <Grid item></Grid>
               <Grid item>
