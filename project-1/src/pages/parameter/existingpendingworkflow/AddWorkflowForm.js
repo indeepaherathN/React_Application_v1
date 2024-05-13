@@ -18,6 +18,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  ListSubheader,
+  FormHelperText,
   Paper
 } from '@mui/material';
 
@@ -28,6 +30,9 @@ import * as Yup from 'yup';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
+import FormControl from '@mui/material/FormControl';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
 
 const validationSchema = Yup.object().shape({
   minimumAmount: Yup.number().required('Minimum amount is required').min(0, 'Minimum amount must be positive'),
@@ -228,15 +233,76 @@ const AddForm = ({ onClose, onSubmit }) => {
           <Divider />
           <DialogContent>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={12}>
-                <Grid container spacing={3}>
-                  <Grid item xs={6} marginLeft={4}>
-                    <Stack spacing={1.25}>
-                      <Typography sx={{ color: 'black', fontWeight: 'bold', fontSize: '15px' }}>Company ID</Typography>
-                      <Typography>{companyId}</Typography>
-                    </Stack>
-                  </Grid>
+              <Grid item xs={12} md={8}>
+                <Grid item xs={6} paddingLeft={4}>
+                  <Stack spacing={1.25}>
+                    <Typography sx={{ color: 'black', fontWeight: 'bold', fontSize: '15px' }}>Company ID</Typography>
+                    <Typography>{companyId}</Typography>
+                  </Stack>
                 </Grid>
+              </Grid>
+              <Grid item xs={12} md={4} paddingRight={4}>
+                <Stack spacing={1.25}>
+                  <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="workflowType">
+                    Workflow Type
+                  </InputLabel>
+                  <FormControl error={Boolean(formik.touched.workflowType && formik.errors.workflowType)}>
+                    <Select
+                      fullWidth
+                      id="workflowType"
+                      multiple
+                      value={formik.values.workflowType}
+                      onChange={(e) => formik.setFieldValue('workflowType', e.target.value)}
+                      renderValue={(selected) => selected.join(',')}
+                    >
+                      <ListSubheader>Category A</ListSubheader>
+                      <MenuItem key="WORKFLOW_CONFIG" value="WORKFLOW_CONFIG">
+                        <Checkbox checked={formik.values.workflowType.includes('WORKFLOW_CONFIG')} />
+                        <ListItemText primary="WORKFLOW_CONFIG" />
+                      </MenuItem>
+                      <MenuItem key="PAYEE_TEMPLATE" value="PAYEE_TEMPLATE">
+                        <Checkbox checked={formik.values.workflowType.includes('PAYEE_TEMPLATE')} />
+                        <ListItemText primary="PAYEE_TEMPLATE" />
+                      </MenuItem>
+                      <MenuItem key="CM_BRANCH" value="CM_BRANCH">
+                        <Checkbox checked={formik.values.workflowType.includes('CM_BRANCH')} />
+                        <ListItemText primary="CM_BRANCH" />
+                      </MenuItem>
+
+                      <ListSubheader>Category B</ListSubheader>
+                      <MenuItem key="OTHER_SB" value="OTHER_SB">
+                        <Checkbox checked={formik.values.workflowType.includes('OTHER_SB')} />
+                        <ListItemText primary="OTHER_SB" />
+                      </MenuItem>
+                      <MenuItem key="OWN_TRANSFER" value="OWN_TRANSFER">
+                        <Checkbox checked={formik.values.workflowType.includes('OWN_TRANSFER')} />
+                        <ListItemText primary="OWN_TRANSFER" />
+                      </MenuItem>
+                      <MenuItem key="OTHER_NON_SB" value="OTHER_NON_SB">
+                        <Checkbox checked={formik.values.workflowType.includes('OTHER_NON_SB')} />
+                        <ListItemText primary="OTHER_NON_SB" />
+                      </MenuItem>
+
+                      <ListSubheader>Category C</ListSubheader>
+                      <MenuItem key="MOBILE_CASH" value="MOBILE_CASH">
+                        <Checkbox checked={formik.values.workflowType.includes('MOBILE_CASH')} />
+                        <ListItemText primary="MOBILE_CASH" />
+                      </MenuItem>
+                      <MenuItem key="PAY_BULK" value="PAY_BULK">
+                        <Checkbox checked={formik.values.workflowType.includes('PAY_BULK')} />
+                        <ListItemText primary="PAY_BULK" />
+                      </MenuItem>
+                      <MenuItem key="BULK_TRANSFER" value="BULK_TRANSFER">
+                        <Checkbox checked={formik.values.workflowType.includes('BULK_TRANSFER')} />
+                        <ListItemText primary="BULK_TRANSFER" />
+                      </MenuItem>
+                    </Select>
+
+                    {formik.touched.workflowType && formik.errors.workflowType && (
+                      <FormHelperText>{formik.errors.workflowType}</FormHelperText>
+                    )}
+                  </FormControl>
+                </Stack>
               </Grid>
             </Grid>
           </DialogContent>
@@ -244,30 +310,7 @@ const AddForm = ({ onClose, onSubmit }) => {
 
           <DialogContent>
             <Grid container paddingLeft={4}>
-              <Grid item md={3} xs={12}>
-                <Stack spacing={1.25}>
-                  <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="workflowType">
-                    Workflow Type
-                  </InputLabel>
-                  <Select
-                    fullWidth
-                    id="workflowType"
-                    {...getFieldProps('workflowType')}
-                    onChange={(e) => {
-                      formik.setFieldValue('workflowType', e.target.value);
-                    }}
-                    value={formik.values.workflowType}
-                    error={Boolean(touched.workflowType && errors.workflowType)}
-                    sx={{ width: '80%' }}
-                    multiple
-                  >
-                    <MenuItem value="USER">USER</MenuItem>
-                    <MenuItem value="OWN_TRANSFER">OWN_TRANSFER</MenuItem>
-                    <MenuItem value="OTHER_SB">OTHER_SB</MenuItem>
-                  </Select>
-                </Stack>
-              </Grid>
-              <Grid item md={3} xs={12}>
+              <Grid item md={4} xs={12}>
                 <Stack spacing={1.25}>
                   <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="accountNumber">
                     Accounts
@@ -295,7 +338,7 @@ const AddForm = ({ onClose, onSubmit }) => {
                   </Select>
                 </Stack>
               </Grid>
-              <Grid item md={3} xs={12}>
+              <Grid item md={4} xs={12}>
                 <Stack spacing={1.25}>
                   <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="minimumAmount">
                     Minimum Amount
@@ -314,7 +357,7 @@ const AddForm = ({ onClose, onSubmit }) => {
                   />
                 </Stack>
               </Grid>
-              <Grid item md={3} xs={12}>
+              <Grid item md={4} xs={12}>
                 <Stack spacing={1.25}>
                   <InputLabel sx={{ color: 'black', fontWeight: 'bold' }} htmlFor="maximumAmount">
                     Maximum Amount
@@ -463,7 +506,7 @@ const AddForm = ({ onClose, onSubmit }) => {
                       </Button>
                       <Button
                         variant="contained"
-                        color="primary" 
+                        color="primary"
                         onClick={() => addAuthorizerOption(optionIndex)}
                         sx={{
                           backgroundColor: '#009688',
